@@ -4,6 +4,7 @@
 #include <sstream>
 
 bool isDark = true;
+std::string wordcount = "";
 bool isSaved = false;
 wxChar * filename;
 wxTextCtrl * textCtrl;
@@ -72,18 +73,20 @@ TexFrame::TexFrame() : wxFrame(NULL, wxID_ANY , "TexEdit++"){
 
     CreateStatusBar();
     if(isSaved){
-        SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\t Saved");
+        SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\tLines:"+wordcount+"\t|\t Saved");
     }else{
-        SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\t Not Saved");
+        SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\tLines:"+wordcount+"\t|\t Not Saved");
     }
 
     textCtrl = new wxTextCtrl(this, wxID_ANY, "",
                                   wxDefaultPosition, wxDefaultSize,
                                   wxTE_MULTILINE | wxTE_RICH | wxTE_PROCESS_TAB);
-    
+    textCtrl->SetMargins(10, 10);
     textCtrl->Bind(wxEVT_TEXT, [this](wxCommandEvent&) {
         isSaved = false;
-        SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\t Not Saved");
+        SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\tLines:"+wordcount+"\t|\t Not Saved");
+        wxString content = textCtrl->GetValue();
+        wordcount = std::to_string(wxSplit(content, '\n').size());
     });
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -97,7 +100,7 @@ TexFrame::TexFrame() : wxFrame(NULL, wxID_ANY , "TexEdit++"){
     Bind(wxEVT_CLOSE_WINDOW, &TexFrame::OnClose, this);
     
     loadFile(filename);
-    SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\t File opened");
+    SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\tLines:"+wordcount+"\t|\t File opened");
 
 }
 
@@ -129,7 +132,7 @@ void TexFrame::OnExit(wxCommandEvent& event){
 void TexFrame::OnSave(wxCommandEvent& event)
 {
     isSaved = true;
-    this->SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\t Saved");
+    this->SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\tLines:"+wordcount+"\t|\t Saved");
     saveFile(filename);
 }
 
