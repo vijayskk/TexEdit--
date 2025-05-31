@@ -97,7 +97,7 @@ TexFrame::TexFrame() : wxFrame(NULL, wxID_ANY , "TexEdit++"){
     Bind(wxEVT_CLOSE_WINDOW, &TexFrame::OnClose, this);
     
     loadFile(filename);
-    
+    SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\t File opened");
 
 }
 
@@ -139,7 +139,7 @@ void TexFrame::ToggleDarkMode(wxCommandEvent& event){
         textCtrl->SetForegroundColour(*wxBLACK);
         textCtrl->Refresh();
     }else{
-        textCtrl->SetBackgroundColour(*wxBLACK);
+        textCtrl->SetBackgroundColour(*wxTransparentColour);
         textCtrl->SetForegroundColour(*wxWHITE);
         textCtrl->Refresh();
     }
@@ -153,6 +153,7 @@ void loadFile(wxChar * fname){
         std::stringstream buffer;
         buffer << file.rdbuf();
         textCtrl->SetValue(buffer.str());
+        isSaved = true;
     }
 }
 
