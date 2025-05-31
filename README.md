@@ -39,6 +39,12 @@ sudo apt install libwxgtk3.0-dev
 
 ## 🧑‍💻 Build & Run
 
+### 0. Download the source
+
+```bash
+git clone https://github.com/vijayskk/TexEdit--.git texedit-build
+cd texedit-build
+```
 ### 🔧 1. Build and Install with Makefile
 
 ```bash
@@ -106,8 +112,8 @@ sudo make uninstall
 
 ## 📜 License
 
-MIT License (or any other license of your choice)
+See the LICENSE file
 
 ---
 
-<p style="text-align:center;">Made by Vijay Satheesh with Love 💌</p>
+<p style="text-align:center;">Made by Vijay Satheesh</p>
