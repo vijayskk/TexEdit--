@@ -1,74 +1,113 @@
-## 📝 TexEdit++
+# 📝 TexEdit++
 
-A minimal C++ text editor built with **wxWidgets**, designed to open and edit a text file provided via the command line.
-
----
-
-### 🔧 Features
-
-* Simple GUI with a resizable multiline textbox
-* Loads a file at launch (via command line)
-* Saves content on close (optional to add)
-* Basic menu bar with `Hello` and `Exit` items
+**TexEdit++** is a minimal, extensible, cross-platform C++ text editor built using the **wxWidgets** GUI library. It loads a text file passed via the command line, and provides helpful features like auto-saving, word counting, dark mode, and more — all with a lightweight codebase.
 
 ---
 
-### 📷 Screenshot
+## 🚀 Features
 
-> *(Optional: Add a screenshot here of the editor window once available)*
+* 📂 Open any text file via command line
+* 💾 Save manually (`Ctrl+S`) or auto-save every 10 seconds (`Ctrl+U`)
+* 🌙 Toggle dark/light mode (`Ctrl+D`)
+* 🧹 Clear all text instantly (`Ctrl+L`)
+* 📊 Displays real-time line count and save status in the status bar
+* 🗃️ Creates the file if it doesn't exist
+* ❓ Prompt to save or discard changes on exit
 
 ---
 
-### 🚀 Getting Started
+## 🖼️ Screenshot
 
-#### ✅ Prerequisites
+![Screen Shot](docs/image.png "Screenshot")
 
-* C++ compiler (e.g. `g++`)
-* wxWidgets (3.x or newer)
 
-#### ✅ Install wxWidgets (Ubuntu/Debian)
+---
+
+## 🛠️ Requirements
+
+* C++ compiler (`g++` or `clang++`)
+* [wxWidgets](https://www.wxwidgets.org/) 3.x or newer
+
+### 🐧 Install wxWidgets on Linux
 
 ```bash
 sudo apt update
 sudo apt install libwxgtk3.0-dev
 ```
 
-#### ✅ Build the Project
+---
+
+## 🧑‍💻 Build & Run
+
+### 🔧 1. Build and Install with Makefile
 
 ```bash
-g++ main.cpp `wx-config --cxxflags --libs` -o texedit
+make
+sudo make install
 ```
-
-#### ✅ Run the Editor
+***Assuming you have setup $PATH to /usr/local/bin***
+### ▶️ 2. Run with a file argument
 
 ```bash
-./texedit myfile.txt
+texedit myfile.txt
 ```
 
-If `myfile.txt` exists, it will be loaded. If not, an empty editor opens (or the program exits, depending on the code logic).
+If the file does not exist, it will be created automatically.
 
 ---
 
-### 📁 Project Structure
-
-```
-main.cpp     # Contains full source code
-README.md    # This file
+### Uninstalling
+```bash
+sudo make uninstall
 ```
 
----
+## ⌨️ Keyboard Shortcuts
 
-### ✨ Future Ideas
-
-* Add file saving on exit
-* Add toolbar with Open/Save buttons
-* Syntax highlighting support
-* Dark mode and font size settings
-
----
-
-### 🧑‍💻 Author
-
-* Built with ❤️ using wxWidgets
+| Action           | Shortcut   |
+| ---------------- | ---------- |
+| Save             | `Ctrl + S` |
+| Toggle Autosave  | `Ctrl + U` |
+| Toggle Dark Mode | `Ctrl + D` |
+| Clear All        | `Ctrl + L` |
 
 ---
+
+## 📁 File Structure
+
+```
+.
+├── src
+|       main.cpp        # Main source code
+├── Makefile            # Simple build script
+|── README.md           # Project documentation
+└── LICENSE             # OpenSource License
+ 
+```
+
+---
+
+## 🔄 Status Bar Info
+
+* Shows current file path
+* Autosave status: `On` / `Off`
+* Number of lines
+* Save state: `Saved` / `Not Saved`
+
+---
+
+## 📌 Planned Features (Optional Ideas)
+
+* File > Open / Save As dialog
+* Font and theme customization
+* Syntax highlighting (using wxStyledTextCtrl)
+* Dirty-state asterisk in window title
+
+---
+
+## 📜 License
+
+MIT License (or any other license of your choice)
+
+---
+
+<p style="text-align:center;">Made by Vijay Satheesh with Love 💌</p>

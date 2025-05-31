@@ -28,13 +28,15 @@ class TexFrame : public wxFrame{
         void OnExit(wxCommandEvent& event);
         void OnAbout(wxCommandEvent& event);
         void OnSave(wxCommandEvent& event);
+        void OnClear(wxCommandEvent& event);
         void ToggleDarkMode(wxCommandEvent& event);
         void ToggleAutoSave(wxCommandEvent& event);
 };
 enum{
     ID_Save = 1,
     ID_Dark = 2,
-    ID_AutoSave = 3
+    ID_AutoSave = 3,
+    ID_Clear = 4
 };
 
 wxIMPLEMENT_APP(TexApp);
@@ -56,7 +58,7 @@ bool TexApp::OnInit(){
     
 }
 
-TexFrame::TexFrame() : wxFrame(NULL, wxID_ANY , "TexEdit++"){
+TexFrame::TexFrame() : wxFrame(NULL, wxID_ANY , "TexEdit++",wxDefaultPosition,wxSize(800, 600)){
     wxMenu * menufile = new wxMenu;
     
     menufile->Append(ID_Save, "&Save...\tCtrl-S",
@@ -64,6 +66,9 @@ TexFrame::TexFrame() : wxFrame(NULL, wxID_ANY , "TexEdit++"){
     
     menufile->Append(ID_AutoSave, "&Toggle Autosave...\tCtrl-U",
                      "Saves the file automatically in 10 seconds");
+    
+    menufile->Append(ID_Clear, "&Clear...\tCtrl-L",
+                     "Clear the content");
 
     menufile->Append(wxID_EXIT);
 
@@ -102,6 +107,7 @@ TexFrame::TexFrame() : wxFrame(NULL, wxID_ANY , "TexEdit++"){
 
 
     Bind(wxEVT_MENU, &TexFrame::OnSave,this,ID_Save);
+    Bind(wxEVT_MENU, &TexFrame::OnClear,this,ID_Clear);
     Bind(wxEVT_MENU, &TexFrame::ToggleDarkMode,this,ID_Dark);
     Bind(wxEVT_MENU, &TexFrame::ToggleAutoSave,this,ID_AutoSave);
     Bind(wxEVT_MENU, &TexFrame::OnExit,this,wxID_EXIT);
@@ -151,6 +157,12 @@ void TexFrame::OnSave(wxCommandEvent& event)
     isSaved = true;
     this->SetStatusText(std::string(wxString(filename).mb_str()) +"\t|\tAutosave: "+ autoSaveState + "\t|\tLines:"+wordcount+"\t|\t Saved");
     saveFile(filename);
+}
+
+void TexFrame::OnClear(wxCommandEvent& event)
+{
+    textCtrl->Clear();
+    this->SetStatusText(std::string(wxString(filename).mb_str()) +"\t|\tAutosave: "+ autoSaveState + "\t|\tLines:"+wordcount+"\t|\t Saved");
 }
 
 void TexFrame::ToggleDarkMode(wxCommandEvent& event){
