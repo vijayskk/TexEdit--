@@ -3,6 +3,8 @@
 #include <fstream>
 #include <sstream>
 
+bool isAutoSave = false;
+std::string autoSaveState = "Off";
 bool isDark = true;
 std::string wordcount = "";
 bool isSaved = false;
@@ -27,10 +29,12 @@ class TexFrame : public wxFrame{
         void OnAbout(wxCommandEvent& event);
         void OnSave(wxCommandEvent& event);
         void ToggleDarkMode(wxCommandEvent& event);
+        void ToggleAutoSave(wxCommandEvent& event);
 };
 enum{
     ID_Save = 1,
-    ID_Dark = 2
+    ID_Dark = 2,
+    ID_AutoSave = 3
 };
 
 wxIMPLEMENT_APP(TexApp);
@@ -57,6 +61,9 @@ TexFrame::TexFrame() : wxFrame(NULL, wxID_ANY , "TexEdit++"){
     
     menufile->Append(ID_Save, "&Save...\tCtrl-S",
                      "Save the file");
+    
+    menufile->Append(ID_AutoSave, "&Toggle Autosave...\tCtrl-U",
+                     "Saves the file automatically in 10 seconds");
 
     menufile->Append(wxID_EXIT);
 
@@ -73,9 +80,9 @@ TexFrame::TexFrame() : wxFrame(NULL, wxID_ANY , "TexEdit++"){
 
     CreateStatusBar();
     if(isSaved){
-        SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\tLines:"+wordcount+"\t|\t Saved");
+        SetStatusText(std::string(wxString(filename).mb_str()) +"\t|\tAutosave: "+ autoSaveState + "\t|\tLines:"+wordcount+"\t|\t Saved");
     }else{
-        SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\tLines:"+wordcount+"\t|\t Not Saved");
+        SetStatusText(std::string(wxString(filename).mb_str()) +"\t|\tAutosave: "+ autoSaveState + "\t|\tLines:"+wordcount+"\t|\t Not Saved");
     }
 
     textCtrl = new wxTextCtrl(this, wxID_ANY, "",
@@ -84,7 +91,7 @@ TexFrame::TexFrame() : wxFrame(NULL, wxID_ANY , "TexEdit++"){
     textCtrl->SetMargins(10, 10);
     textCtrl->Bind(wxEVT_TEXT, [this](wxCommandEvent&) {
         isSaved = false;
-        SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\tLines:"+wordcount+"\t|\t Not Saved");
+        SetStatusText(std::string(wxString(filename).mb_str()) +"\t|\tAutosave: "+ autoSaveState + "\t|\tLines:"+wordcount+"\t|\t Not Saved");
         wxString content = textCtrl->GetValue();
         wordcount = std::to_string(wxSplit(content, '\n').size());
     });
@@ -96,12 +103,22 @@ TexFrame::TexFrame() : wxFrame(NULL, wxID_ANY , "TexEdit++"){
 
     Bind(wxEVT_MENU, &TexFrame::OnSave,this,ID_Save);
     Bind(wxEVT_MENU, &TexFrame::ToggleDarkMode,this,ID_Dark);
+    Bind(wxEVT_MENU, &TexFrame::ToggleAutoSave,this,ID_AutoSave);
     Bind(wxEVT_MENU, &TexFrame::OnExit,this,wxID_EXIT);
     Bind(wxEVT_CLOSE_WINDOW, &TexFrame::OnClose, this);
     
     loadFile(filename);
-    SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\tLines:"+wordcount+"\t|\t File opened");
+    SetStatusText(std::string(wxString(filename).mb_str()) +"\t|\tAutosave: "+ autoSaveState + "\t|\tLines:"+wordcount+"\t|\t File opened");
 
+    wxTimer* autoSaveTimer = new wxTimer(this);
+    Bind(wxEVT_TIMER, [&](wxTimerEvent&){
+        if(isAutoSave){
+            isSaved = true;
+            this->SetStatusText(std::string(wxString(filename).mb_str()) +"\t|\tAutosave: "+ autoSaveState + "\t|\tLines:"+wordcount+"\t|\t Auto Saved");
+            saveFile(filename);
+        }
+    });
+    autoSaveTimer->Start(10000);
 }
 
 void TexFrame::OnClose(wxCloseEvent& event){
@@ -132,7 +149,7 @@ void TexFrame::OnExit(wxCommandEvent& event){
 void TexFrame::OnSave(wxCommandEvent& event)
 {
     isSaved = true;
-    this->SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\tLines:"+wordcount+"\t|\t Saved");
+    this->SetStatusText(std::string(wxString(filename).mb_str()) +"\t|\tAutosave: "+ autoSaveState + "\t|\tLines:"+wordcount+"\t|\t Saved");
     saveFile(filename);
 }
 
@@ -149,6 +166,17 @@ void TexFrame::ToggleDarkMode(wxCommandEvent& event){
     isDark = !isDark;
 };
 
+void TexFrame::ToggleAutoSave(wxCommandEvent& event){
+    if(isAutoSave){
+        autoSaveState = "Off";
+        isAutoSave = false;
+    }else{
+        autoSaveState = "On";
+        isAutoSave = true;
+    }
+    this->SetStatusText(std::string(wxString(filename).mb_str()) +"\t|\tAutosave: "+ autoSaveState + "\t|\tLines:"+wordcount+"\t|\t Auto Saved");
+
+};
 
 void loadFile(wxChar * fname){
     std::ifstream file(std::string(wxString(filename).mb_str()).c_str());
