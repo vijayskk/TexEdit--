@@ -3,9 +3,12 @@
 #include <fstream>
 #include <sstream>
 
-
+bool isDark = true;
+bool isSaved = false;
 wxChar * filename;
 wxTextCtrl * textCtrl;
+void loadFile(wxChar * fname);
+void saveFile(wxChar * fname);
 
 
 class TexApp: public wxApp{
@@ -18,12 +21,15 @@ class TexFrame : public wxFrame{
     public: 
         TexFrame();
     private:
+        void OnClose(wxCloseEvent& event);
         void OnExit(wxCommandEvent& event);
         void OnAbout(wxCommandEvent& event);
-        void OnHello(wxCommandEvent& event);
+        void OnSave(wxCommandEvent& event);
+        void ToggleDarkMode(wxCommandEvent& event);
 };
 enum{
-    ID_Hello = 1
+    ID_Save = 1,
+    ID_Dark = 2
 };
 
 wxIMPLEMENT_APP(TexApp);
@@ -48,43 +54,111 @@ bool TexApp::OnInit(){
 TexFrame::TexFrame() : wxFrame(NULL, wxID_ANY , "TexEdit++"){
     wxMenu * menufile = new wxMenu;
     
-    menufile->Append(ID_Hello, "&Hello...\tCtrl-H",
-                     "Help string shown in status bar for this menu item");
+    menufile->Append(ID_Save, "&Save...\tCtrl-S",
+                     "Save the file");
 
     menufile->Append(wxID_EXIT);
 
+    wxMenu * menuview = new wxMenu;
+    menuview->Append(ID_Dark, "&Toggle Dark Mode...\tCtrl-D",
+                     "Toggle Dark or White Mode");
+
     wxMenuBar * menubar = new wxMenuBar;
     menubar->Append(menufile, "&File");
+    menubar->Append(menuview, "&View");
+
+
     SetMenuBar(menubar);
 
     CreateStatusBar();
-    SetStatusText(filename);
+    if(isSaved){
+        SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\t Saved");
+    }else{
+        SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\t Not Saved");
+    }
 
     textCtrl = new wxTextCtrl(this, wxID_ANY, "",
                                   wxDefaultPosition, wxDefaultSize,
                                   wxTE_MULTILINE | wxTE_RICH | wxTE_PROCESS_TAB);
+    
+    textCtrl->Bind(wxEVT_TEXT, [this](wxCommandEvent&) {
+        isSaved = false;
+        SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\t Not Saved");
+    });
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(textCtrl, 1, wxEXPAND);
     SetSizer(sizer);
 
 
-    Bind(wxEVT_MENU, &TexFrame::OnHello,this,ID_Hello);
+    Bind(wxEVT_MENU, &TexFrame::OnSave,this,ID_Save);
+    Bind(wxEVT_MENU, &TexFrame::ToggleDarkMode,this,ID_Dark);
     Bind(wxEVT_MENU, &TexFrame::OnExit,this,wxID_EXIT);
+    Bind(wxEVT_CLOSE_WINDOW, &TexFrame::OnClose, this);
     
-    std::ifstream file(std::string(wxString(filename).mb_str()).c_str());
-        if (file){
-            std::stringstream buffer;
-            buffer << file.rdbuf();
-            textCtrl->SetValue(buffer.str());
-        }
+    loadFile(filename);
+    
 
+}
+
+void TexFrame::OnClose(wxCloseEvent& event){
+    if(!isSaved){
+        int result = wxMessageBox("Do you want to save changes to the file?",
+                              "Confirm Exit",
+                              wxYES_NO | wxCANCEL | wxICON_QUESTION, this);
+        if (result == wxYES){
+            saveFile(filename);
+            event.Skip(); 
+        }
+        else if (result == wxNO) {
+            event.Skip(); 
+        }
+        else {
+            event.Veto();
+        }
+    }else{
+        event.Skip();
+    }
+    
 }
 
 void TexFrame::OnExit(wxCommandEvent& event){
     Close(true);
 }
-void TexFrame::OnHello(wxCommandEvent& event)
+
+void TexFrame::OnSave(wxCommandEvent& event)
 {
-    wxLogMessage("Hello world from wxWidgets!");
+    isSaved = true;
+    this->SetStatusText(std::string(wxString(filename).mb_str()) + " \t|\t Saved");
+    saveFile(filename);
+}
+
+void TexFrame::ToggleDarkMode(wxCommandEvent& event){
+    if (isDark){
+        textCtrl->SetBackgroundColour(*wxWHITE);
+        textCtrl->SetForegroundColour(*wxBLACK);
+        textCtrl->Refresh();
+    }else{
+        textCtrl->SetBackgroundColour(*wxBLACK);
+        textCtrl->SetForegroundColour(*wxWHITE);
+        textCtrl->Refresh();
+    }
+    isDark = !isDark;
+};
+
+
+void loadFile(wxChar * fname){
+    std::ifstream file(std::string(wxString(filename).mb_str()).c_str());
+    if (file){
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        textCtrl->SetValue(buffer.str());
+    }
+}
+
+void saveFile(wxChar * fname){
+    std::ofstream file(std::string(wxString(filename).mb_str()).c_str());
+    if (file){
+        file << textCtrl->GetValue().ToStdString();
+    }
 }
