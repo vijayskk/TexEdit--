@@ -62,7 +62,7 @@ bool TexApp::OnInit(){
 TexFrame::TexFrame() : wxFrame(NULL, wxID_ANY , "TexEdit++",wxDefaultPosition,wxSize(800, 600)){
     if (!isLoaded){
         wxFileDialog openFileDialog(this, "Open file", "", "",
-                                "Text files (*.txt)|*.txt|All files (*.*)|*.*",
+                                "All files (*.*)|*.*",
                                 wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         if (openFileDialog.ShowModal() == wxID_OK) {
             wxString path = openFileDialog.GetPath();
