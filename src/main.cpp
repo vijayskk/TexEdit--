@@ -11,7 +11,7 @@ bool isSaved = false;
 wxChar * filename;
 wxTextCtrl * textCtrl;
 void loadFile(wxChar * fname);
-void saveFile(wxChar * fname);
+bool saveFile(wxChar * fname);
 
 
 class TexApp: public wxApp{
@@ -133,7 +133,10 @@ void TexFrame::OnClose(wxCloseEvent& event){
                               "Confirm Exit",
                               wxYES_NO | wxCANCEL | wxICON_QUESTION, this);
         if (result == wxYES){
-            saveFile(filename);
+            int res = saveFile(filename);
+            if (!res){
+                wxMessageBox("Permission denied. File not saved","Oops!!",wxCANCEL,this);
+            }
             event.Skip(); 
         }
         else if (result == wxNO) {
@@ -155,8 +158,14 @@ void TexFrame::OnExit(wxCommandEvent& event){
 void TexFrame::OnSave(wxCommandEvent& event)
 {
     isSaved = true;
-    this->SetStatusText(std::string(wxString(filename).mb_str()) +"\t|\tAutosave: "+ autoSaveState + "\t|\tLines:"+wordcount+"\t|\t Saved");
-    saveFile(filename);
+    bool res = saveFile(filename);
+    if (res){
+        isSaved = true;
+        this->SetStatusText(std::string(wxString(filename).mb_str()) +"\t|\tAutosave: "+ autoSaveState + "\t|\tLines:"+wordcount+"\t|\t Saved");
+    }else{
+        isAutoSave = false;
+        this->SetStatusText(std::string(wxString(filename).mb_str()) +"\t|\tAutosave: "+ autoSaveState + "\t|\tLines:"+wordcount+"\t|\t Permission denied. File not saved");
+    }
 }
 
 void TexFrame::OnClear(wxCommandEvent& event)
@@ -200,9 +209,12 @@ void loadFile(wxChar * fname){
     }
 }
 
-void saveFile(wxChar * fname){
+bool saveFile(wxChar * fname){
     std::ofstream file(std::string(wxString(filename).mb_str()).c_str());
-    if (file){
+    if (file.is_open()){
         file << textCtrl->GetValue().ToStdString();
+        return true;
+    }else{
+        return false;
     }
 }
