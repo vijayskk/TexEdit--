@@ -1,10 +1,12 @@
+#define NDEFUG
+
 #include <wx/wx.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <unistd.h>
 
-
+bool isLoaded = false;
 bool isAutoSave = false;
 std::string autoSaveState = "Off";
 bool isDark = true;
@@ -50,18 +52,26 @@ bool TexApp::OnInit(){
     wxChar** argv = wxTheApp->argv;
     if(argc>1){
         filename = argv[1];
-        TexFrame * frame = new TexFrame();
-        frame-> Show(true);
-        return true;
-    }else{
-        std::cout<<"No file loaded"<<std::endl;
-        exit(0);
-        return false;
+        isLoaded = true;
     }
-    
+    TexFrame * frame = new TexFrame();
+    frame-> Show(true);
+    return true;
 }
 
 TexFrame::TexFrame() : wxFrame(NULL, wxID_ANY , "TexEdit++",wxDefaultPosition,wxSize(800, 600)){
+    if (!isLoaded){
+        wxFileDialog openFileDialog(this, "Open file", "", "",
+                                "Text files (*.txt)|*.txt|All files (*.*)|*.*",
+                                wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        if (openFileDialog.ShowModal() == wxID_OK) {
+            wxString path = openFileDialog.GetPath();
+            filename = new wxChar[path.length() + 1];
+            wxStrcpy(filename, path.c_str());
+        }else{
+            exit(0);
+        }
+    }
     wxMenu * menufile = new wxMenu;
     
     menufile->Append(ID_Save, "&Save...\tCtrl-S",
@@ -119,7 +129,6 @@ TexFrame::TexFrame() : wxFrame(NULL, wxID_ANY , "TexEdit++",wxDefaultPosition,wx
     
     bool loadres = loadFile(filename);
     if(!loadres){
-        std::cout<<"Here\n";
         wxMessageBox("Cannot Open File!","Oops!!",wxCANCEL,this);
         exit(0);
     }
