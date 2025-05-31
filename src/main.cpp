@@ -2,6 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <unistd.h>
+
 
 bool isAutoSave = false;
 std::string autoSaveState = "Off";
@@ -10,7 +12,7 @@ std::string wordcount = "";
 bool isSaved = false;
 wxChar * filename;
 wxTextCtrl * textCtrl;
-void loadFile(wxChar * fname);
+bool loadFile(wxChar * fname);
 bool saveFile(wxChar * fname);
 
 
@@ -113,7 +115,12 @@ TexFrame::TexFrame() : wxFrame(NULL, wxID_ANY , "TexEdit++",wxDefaultPosition,wx
     Bind(wxEVT_MENU, &TexFrame::OnExit,this,wxID_EXIT);
     Bind(wxEVT_CLOSE_WINDOW, &TexFrame::OnClose, this);
     
-    loadFile(filename);
+    bool loadres = loadFile(filename);
+    if(!loadres){
+        std::cout<<"Here\n";
+        wxMessageBox("Cannot Open File!","Oops!!",wxCANCEL,this);
+        exit(0);
+    }
     SetStatusText(std::string(wxString(filename).mb_str()) +"\t|\tAutosave: "+ autoSaveState + "\t|\tLines:"+wordcount+"\t|\t File opened");
 
     wxTimer* autoSaveTimer = new wxTimer(this);
@@ -199,13 +206,16 @@ void TexFrame::ToggleAutoSave(wxCommandEvent& event){
 
 };
 
-void loadFile(wxChar * fname){
+bool loadFile(wxChar * fname){
     std::ifstream file(std::string(wxString(filename).mb_str()).c_str());
-    if (file){
+    if (access(std::string(wxString(filename).mb_str()).c_str(),R_OK|W_OK) != -1){
         std::stringstream buffer;
         buffer << file.rdbuf();
         textCtrl->SetValue(buffer.str());
         isSaved = true;
+        return true;
+    }else{
+        return false;
     }
 }
 
